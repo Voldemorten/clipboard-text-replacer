@@ -36,6 +36,18 @@ async function getCurrentTab() {
     return null;
 }
 
+const readLocalStorage = async () => {
+    return new Promise((resolve, reject) => {
+        chrome.storage.sync.get(['todoItems'], function (result) {
+            if (result['todoItems'] === undefined) {
+                reject();
+            } else {
+                resolve(result['todoItems']);
+            }
+        });
+    });
+};
+
 // A generic onclick callback function.
 async function genericOnClick(info) {
     try {
@@ -43,21 +55,47 @@ async function genericOnClick(info) {
             /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
 
         const textToReplace = info.linkUrl || info.selectionText;
-        const regex = /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/gm;
-        const result = textToReplace.replace(regex, 'localhost:3000');
+        // const regex = /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/gm;
+        // const result = textToReplace.replace(regex, 'localhost:3000');
+        let outResult;
+
+        console.log(1);
+        // const todoItems = await chrome.storage.sync.get(['todoItems'], function (result) {
+        //     console.log(2, result.todoItems.length);
+        //     for (let i = 0; i < result.todoItems.length; i++) {
+        //         const item = result.todoItems[i];
+        //         const regex = new RegExp(item.newItemTextFrom, 'gm');
+        //         console.log(3, regex);
+        //         outResult = textToReplace.replace(regex, item.newItemTextTo);
+        //         console.log(4, result);
+        //     }
+        // });
+
+        const todoItems = await readLocalStorage();
+        console.log(todoItems);
+        for (let i = 0; i < todoItems.length; i++) {
+            const item = todoItems[i];
+            const regex = new RegExp(item.newItemTextFrom, 'gm');
+            console.log(3, regex);
+            outResult = textToReplace.replace(regex, item.newItemTextTo);
+            console.log(4, outResult);
+        }
+
+        console.log(5, outResult);
+
         switch (info.menuItemId) {
             case 'copyAndReplaceSelection':
                 const tab = await getCurrentTab();
                 chrome.scripting.executeScript({
                     target: { tabId: tab.id },
                     func: contentCopy,
-                    args: [result],
+                    args: [outResult],
                 });
 
-                console.log('Substitution result: ', result);
+                console.log('Substitution result: ', outResult);
                 break;
             case 'copyAndReplaceSelectionAndOpenInNewTab':
-                chrome.tabs.create({ url: result });
+                chrome.tabs.create({ url: outResult });
                 break;
             case 'selection':
                 console.log('Selection item clicked');

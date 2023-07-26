@@ -12,8 +12,9 @@
         "32": "./icons/icon_32.png",
         "128": "./icons/icon_128.png"
     },
-    "permissions": ["contextMenus", "clipboardWrite", "activeTab", "scripting", "tabs"],
+    "permissions": ["contextMenus", "clipboardWrite", "activeTab", "scripting", "tabs", "storage"],
     "background": {
         "service_worker": "scripts/background.js"
-    }
+    },
+    "options_page": "options.html"
 }
