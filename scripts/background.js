@@ -23,6 +23,7 @@ function contentCopy(text) {
             console.log('Copied to clipboard: ', text);
         })
         .catch((e) => {
+            console.log(e);
             alert('Error copying to clipboard: ', JSON.stringify(e, null, 2));
         });
 }
