@@ -5,9 +5,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const todoList = document.getElementById('todo-list');
 
     // Load items from Chrome memory when the options page is opened
-    chrome.storage.sync.get(['todoItems'], function (result) {
-        const todoItems = result.todoItems || [];
-        renderTodoList(todoItems);
+    chrome.storage.sync.get(['replacementItems'], function (result) {
+        const replacementItems = result.replacementItems || [];
+        renderTodoList(replacementItems);
     });
 
     // Add event listener to the add button
@@ -16,14 +16,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const newItemTextTo = newItemTo.value.trim();
         if (newItemTextFrom !== '' && newItemTextTo !== '') {
             // Retrieve existing items from Chrome memory
-            chrome.storage.sync.get(['todoItems'], function (result) {
-                const todoItems = result.todoItems || [];
+            chrome.storage.sync.get(['replacementItems'], function (result) {
+                const replacementItems = result.replacementItems || [];
                 // Add the new item
-                todoItems.push({ newItemTextFrom, newItemTextTo });
+                replacementItems.push({ newItemTextFrom, newItemTextTo });
                 // Save the updated items to Chrome memory
-                chrome.storage.sync.set({ todoItems: todoItems }, function () {
+                chrome.storage.sync.set({ replacementItems: replacementItems }, function () {
                     // Update the displayed todo list
-                    renderTodoList(todoItems);
+                    renderTodoList(replacementItems);
                 });
             });
 
@@ -35,22 +35,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Remove an item from the todo list
     function removeItem(index) {
-        chrome.storage.sync.get(['todoItems'], function (result) {
-            const todoItems = result.todoItems || [];
+        chrome.storage.sync.get(['replacementItems'], function (result) {
+            const replacementItems = result.replacementItems || [];
             // Remove the item at the given index
-            todoItems.splice(index, 1);
+            replacementItems.splice(index, 1);
             // Save the updated items to Chrome memory
-            chrome.storage.sync.set({ todoItems: todoItems }, function () {
+            chrome.storage.sync.set({ replacementItems: replacementItems }, function () {
                 // Update the displayed todo list
-                renderTodoList(todoItems);
+                renderTodoList(replacementItems);
             });
         });
     }
 
     // Render the todo list on the options page
-    function renderTodoList(todoItems) {
+    function renderTodoList(replacementItems) {
         todoList.innerHTML = ''; // Clear the list first
-        todoItems.forEach((item, index) => {
+        replacementItems.forEach((item, index) => {
             const listItem = document.createElement('li');
             listItem.textContent = item.newItemTextFrom + ' -> ' + item.newItemTextTo;
             const removeButton = document.createElement('button');
