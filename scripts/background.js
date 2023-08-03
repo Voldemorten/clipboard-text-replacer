@@ -56,8 +56,7 @@ async function genericOnClick(info) {
         const validUrlRegex =
             /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
 
-        const textToReplace = info.linkUrl || info.selectionText;
-        let outResult;
+        let textToReplace = info.linkUrl || info.selectionText;
 
         const replacementItems = await readLocalStorage();
         console.log(replacementItems);
@@ -73,25 +72,25 @@ async function genericOnClick(info) {
         for (let i = 0; i < replacementItems.length; i++) {
             const item = replacementItems[i];
             const regex = new RegExp(item.newItemTextFrom, 'gm');
-            console.log(3, regex);
-            outResult = textToReplace.replace(regex, item.newItemTextTo);
-            console.log(4, outResult);
+            console.log(textToReplace);
+            textToReplace = textToReplace.replace(regex, item.newItemTextTo);
+            console.log(textToReplace);
         }
 
-        console.log(5, outResult);
+        console.log(5, textToReplace);
 
         switch (info.menuItemId) {
             case 'copyAndReplaceSelection':
                 chrome.scripting.executeScript({
                     target: { tabId: tab.id },
                     func: contentCopy,
-                    args: [outResult],
+                    args: [textToReplace],
                 });
 
-                console.log('Substitution result: ', outResult);
+                console.log('Substitution result: ', textToReplace);
                 break;
             case 'copyAndReplaceSelectionAndOpenInNewTab':
-                chrome.tabs.create({ url: outResult });
+                chrome.tabs.create({ url: textToReplace });
                 break;
             case 'selection':
                 console.log('Selection item clicked');
