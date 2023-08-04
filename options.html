@@ -2,21 +2,26 @@
 <html>
 
 <head>
-    <title>Todo List Options</title>
+    <title>Text replacement list</title>
 </head>
 
 <body>
-    <h1>Todo List Options</h1>
+    <h1>Text replacement list</h1>
+    <p>Use this page to add items to the text replacement list.</p>
+    <p>Items are replaced in the order they appear in the list.</p>
+    <p>example: input text: <span style="font-weight: bold;">/^(https?:\/\/(www\.)?[^/]+)/g</span> replaced with <span
+            style="font-weight: bold;">localhost:3000</span> will replace any matching url with localhost:3000</p>
+    <br>
+    <br>
+    <br>
+
     <div>
-        <a href="https://demolink/123/123">demo link</a>
-    </div>
-    <div>
-        <label for="replace-text-from">New Item:</label>
+        <label for="replace-text-from">New Item (regex is allowed):</label>
         <input type="text" id="replace-text-from" /> with <input type="text" id="replace-text-to" />
         <button id="add-button">Add Item</button>
 
     </div>
-    <ul id="todo-list"></ul>
+    <ul id="replacement-list"></ul>
     <script src="./scripts/options.js"></script>
 </body>
 

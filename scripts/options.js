@@ -2,12 +2,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const addButton = document.getElementById('add-button');
     const newItemFrom = document.getElementById('replace-text-from');
     const newItemTo = document.getElementById('replace-text-to');
-    const todoList = document.getElementById('todo-list');
+    const replacementList = document.getElementById('replacement-list');
 
     // Load items from Chrome memory when the options page is opened
     chrome.storage.sync.get(['replacementItems'], function (result) {
         const replacementItems = result.replacementItems || [];
-        renderTodoList(replacementItems);
+        renderReplacementItems(replacementItems);
     });
 
     // Add event listener to the add button
@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 replacementItems.push({ newItemTextFrom, newItemTextTo });
                 // Save the updated items to Chrome memory
                 chrome.storage.sync.set({ replacementItems: replacementItems }, function () {
-                    // Update the displayed todo list
-                    renderTodoList(replacementItems);
+                    // Update the displayed replacement list
+                    renderReplacementItems(replacementItems);
                 });
             });
 
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Remove an item from the todo list
+    // Remove an item from the replacement list
     function removeItem(index) {
         chrome.storage.sync.get(['replacementItems'], function (result) {
             const replacementItems = result.replacementItems || [];
@@ -41,15 +41,15 @@ document.addEventListener('DOMContentLoaded', function () {
             replacementItems.splice(index, 1);
             // Save the updated items to Chrome memory
             chrome.storage.sync.set({ replacementItems: replacementItems }, function () {
-                // Update the displayed todo list
-                renderTodoList(replacementItems);
+                // Update the displayed replacement list
+                renderReplacementItems(replacementItems);
             });
         });
     }
 
-    // Render the todo list on the options page
-    function renderTodoList(replacementItems) {
-        todoList.innerHTML = ''; // Clear the list first
+    // Render the replacement list on the options page
+    function renderReplacementItems(replacementItems) {
+        replacementList.innerHTML = ''; // Clear the list first
         replacementItems.forEach((item, index) => {
             const listItem = document.createElement('li');
             listItem.textContent = item.newItemTextFrom + ' -> ' + item.newItemTextTo;
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 removeItem(index);
             });
             listItem.appendChild(removeButton);
-            todoList.appendChild(listItem);
+            replacementList.appendChild(listItem);
         });
     }
 });

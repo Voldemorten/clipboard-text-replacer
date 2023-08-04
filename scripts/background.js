@@ -17,14 +17,68 @@ chrome.contextMenus.onClicked.addListener(genericOnClick);
 
 // To be injected to the active tab
 function contentCopy(text) {
+    const defaultNotificationStyles = {
+        position: 'fixed',
+        top: '20px' /* Adjust this value to control the vertical position */,
+        right: '20px' /* Adjust this value to control the horizontal position */,
+        backgroundColor: '#444',
+        color: '#fff',
+        padding: '25px',
+        borderRadius: '4px',
+        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
+        opacity: '1',
+        transition: 'opacity 0.5s ease-in-out' /* Add the fade-out transition */,
+        zIndex: '9999',
+    };
+
     navigator.clipboard
         .writeText(text)
         .then((t) => {
+            // Add a notification to the body, that disappears after 2 seconds
+            const notification = document.createElement('div');
+            notification.textContent = `Copied ${text} to clipboard`;
+
+            const customStyles = {
+                color: '#155724',
+                backgroundColor: '#d4edda',
+                borderColor: '#c3e6cb',
+            };
+
+            Object.assign(notification.style, { ...defaultNotificationStyles, ...customStyles });
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                // Schedule the removal after the transition completes (0.5 seconds)
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            }, 5000);
+
             console.log('Copied to clipboard: ', text);
         })
         .catch((e) => {
             console.log(e);
-            alert('Error copying to clipboard: ', JSON.stringify(e, null, 2));
+            // Add a notification to the body, that disappears after 5 seconds
+            const notification = document.createElement('div');
+            notification.textContent = `Copied ${text} to clipboard`;
+
+            const customStyles = {
+                color: '#721c24',
+                backgroundCcolor: '#f8d7da',
+                borderColor: '#f5c6cb',
+            };
+
+            Object.assign(notification.style, { ...defaultNotificationStyles, ...customStyles });
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                // Schedule the removal after the transition completes (0.5 seconds)
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            }, 5000);
         });
 }
 
@@ -51,15 +105,11 @@ const readLocalStorage = async () => {
 
 // A generic onclick callback function.
 async function genericOnClick(info) {
+    const validUrlRegex =
+        /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
     try {
-        const tab = await getCurrentTab();
-        const validUrlRegex =
-            /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
-
-        let textToReplace = info.linkUrl || info.selectionText;
-
         const replacementItems = await readLocalStorage();
-        console.log(replacementItems);
+
         if (!replacementItems.length) {
             chrome.scripting.executeScript({
                 target: { tabId: tab.id },
@@ -69,78 +119,165 @@ async function genericOnClick(info) {
             });
             return;
         }
-        for (let i = 0; i < replacementItems.length; i++) {
-            const item = replacementItems[i];
-            const regex = new RegExp(item.newItemTextFrom, 'gm');
-            console.log(textToReplace);
-            textToReplace = textToReplace.replace(regex, item.newItemTextTo);
-            console.log(textToReplace);
+
+        if (info.menuItemId.includes('generated')) {
+            return generatedOnClick(info);
+        } else {
+            const tab = await getCurrentTab();
+            let textToReplace = info.linkUrl || info.selectionText;
+            switch (info.menuItemId) {
+                case 'copyAndReplaceSelection':
+                    textToReplace = replaceText({
+                        replacementItems,
+                        textToReplace,
+                        chained: false,
+                    });
+                    chrome.scripting.executeScript({
+                        target: { tabId: tab.id },
+                        func: contentCopy,
+                        args: [textToReplace],
+                    });
+                    break;
+
+                case 'copyAndReplaceSelectionChained':
+                    textToReplace = replaceText({
+                        replacementItems,
+                        textToReplace,
+                        chained: false,
+                    });
+                    chrome.scripting.executeScript({
+                        target: { tabId: tab.id },
+                        func: contentCopy,
+                        args: [textToReplace],
+                    });
+                    break;
+
+                case 'copyAndReplaceSelectionAndOpenInNewTab':
+                    textToReplace = replaceText({
+                        replacementItems,
+                        textToReplace,
+                        chained: false,
+                    });
+                    chrome.tabs.create({ url: textToReplace });
+                    break;
+
+                case 'copyAndReplaceSelectionAndOpenInNewTabChained':
+                    textToReplace = replaceText({
+                        replacementItems,
+                        textToReplace,
+                        chained: true,
+                    });
+                    chrome.tabs.create({ url: textToReplace });
+                    break;
+
+                case 'selection':
+                    console.log('Selection item clicked');
+                    break;
+
+                case 'link':
+                    console.log('Link item clicked');
+                    break;
+
+                default:
+                    // Standard context menu item function
+                    console.log('Standard context menu item clicked.');
+            }
         }
-
-        console.log(5, textToReplace);
-
-        switch (info.menuItemId) {
-            case 'copyAndReplaceSelection':
-                chrome.scripting.executeScript({
-                    target: { tabId: tab.id },
-                    func: contentCopy,
-                    args: [textToReplace],
-                });
-
-                console.log('Substitution result: ', textToReplace);
-                break;
-            case 'copyAndReplaceSelectionAndOpenInNewTab':
-                chrome.tabs.create({ url: textToReplace });
-                break;
-            case 'selection':
-                console.log('Selection item clicked');
-                break;
-            case 'link':
-                console.log('Link item clicked');
-                break;
-            default:
-                // Standard context menu item function
-                console.log('Standard context menu item clicked.');
-        }
-        console.log(info);
     } catch (e) {
         console.error(e);
     }
 }
-chrome.runtime.onInstalled.addListener(function () {
+
+function isValidRegex(regexString) {
+    const regexPattern = /^\/.*\/[gimuy]*$/;
+    return regexPattern.test(regexString);
+}
+
+function replaceText({ replacementItems, textToReplace, chained } = {}) {
+    for (let i = 0; i < replacementItems.length; i++) {
+        const item = replacementItems[i];
+        if (isValidRegex(item.newItemTextFrom)) {
+            const lastSlashIndex = item.newItemTextFrom.lastIndexOf('/');
+            const regexPattern = item.newItemTextFrom.slice(1, lastSlashIndex);
+            const regexOptions = item.newItemTextFrom.slice(lastSlashIndex + 1);
+            const regex = new RegExp(regexPattern, regexOptions);
+            textToReplace = textToReplace.replace(regex, item.newItemTextTo);
+        } else {
+            textToReplace = textToReplace.replaceAll(item.newItemTextFrom, item.newItemTextTo);
+        }
+
+        if (!chained) {
+            return textToReplace;
+        }
+    }
+    return textToReplace;
+}
+
+async function generatedOnClick(info) {
+    const item = JSON.parse(info.menuItemId.replace('generated-', ''));
+    const tab = await getCurrentTab();
+    const replacedText = replaceText({
+        replacementItems: [item],
+        textToReplace: info.linkUrl || info.selectionText,
+        chained: false,
+    });
+    chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: contentCopy,
+        args: [replacedText],
+    });
+}
+
+async function addContextMenusFromReplacementItems() {
+    const replacementItems = await readLocalStorage();
+    for (let i = 0; i < replacementItems.length; i++) {
+        const item = replacementItems[i];
+        chrome.contextMenus.create({
+            title: `Replace ${item.newItemTextFrom} with ${item.newItemTextTo} and copy to clipboard`,
+            contexts: ['selection', 'link'],
+            id: `generated-${JSON.stringify(item)}`,
+        });
+    }
+}
+
+function addGenericContextMenus() {
     chrome.contextMenus.create({
-        title: 'Copy and replace selection with localhost',
+        title: 'Copy and replace selection with the first matched rule',
         contexts: ['selection', 'link'],
         id: 'copyAndReplaceSelection',
     });
 
     chrome.contextMenus.create({
-        title: 'Copy and replace selection with localhost and open in new tab',
+        title: 'Copy and replace selection with the chained rules',
         contexts: ['selection', 'link'],
+        id: 'copyAndReplaceSelectionChained',
+    });
+
+    chrome.contextMenus.create({
+        title: 'replace selection with first matched rule and open in new tab',
+        contexts: ['link'],
         id: 'copyAndReplaceSelectionAndOpenInNewTab',
     });
-    // Create one test item for each context type.
-    // let contexts = [
-    //     'all',
-    //     'page',
-    //     'frame',
-    //     'selection',
-    //     'link',
-    //     'editable',
-    //     'image',
-    //     'video',
-    //     'audio',
-    //     'browser_action',
-    //     'page_action',
-    //     'action',
-    // ];
-    // for (let i = 0; i < contexts.length; i++) {
-    //     const context = contexts[i];
-    //     let title = "Test '" + context + "' menu item";
-    //     chrome.contextMenus.create({
-    //         title: title,
-    //         contexts: [context],
-    //         id: context,
-    //     });
-    // }
+
+    chrome.contextMenus.create({
+        title: 'replace selection with first matched rule and open in new tab',
+        contexts: ['link'],
+        id: 'copyAndReplaceSelectionAndOpenInNewTabChained',
+    });
+}
+
+chrome.runtime.onInstalled.addListener(async function () {
+    addGenericContextMenus();
+    await addContextMenusFromReplacementItems();
+});
+
+chrome.storage.onChanged.addListener(function (changes, namespace) {
+    if (namespace === 'sync' && 'replacementItems' in changes) {
+        // The 'replacementItems' value has changed.
+        // Reload your logic inside the chrome.runtime.onInstalled listener here.
+        // You can either call the listener function directly or move the logic into a separate function and call it.
+        chrome.contextMenus.removeAll();
+        addGenericContextMenus();
+        addContextMenusFromReplacementItems();
+    }
 });
