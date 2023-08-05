@@ -3,25 +3,36 @@
 
 <head>
     <title>Text replacement list</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
 </head>
 
-<body>
-    <h1>Text replacement list</h1>
-    <p>Use this page to add items to the text replacement list.</p>
-    <p>Items are replaced in the order they appear in the list.</p>
-    <p>example: input text: <span style="font-weight: bold;">/^(https?:\/\/(www\.)?[^/]+)/g</span> replaced with <span
-            style="font-weight: bold;">localhost:3000</span> will replace any matching url with localhost:3000</p>
-    <br>
-    <br>
-    <br>
+<body class="p-6 bg-gray-200">
+    <h1 class="text-2xl font-bold mb-4">Text replacement list</h1>
+    <p class="mb-2">Use this page to add items to the text replacement list.</p>
+    <p class="mb-2">Items are replaced in the order they appear in the list.</p>
+    <p class="mb-2">Example: input text: <span class="font-bold">/^(https?:\/\/(www\.)?[^/]+)/g</span> replaced with
+        <span class="font-bold">localhost:3000</span> will replace any matching url with localhost:3000
+    </p>
 
-    <div>
-        <label for="replace-text-from">New Item (regex is allowed):</label>
-        <input type="text" id="replace-text-from" /> with <input type="text" id="replace-text-to" />
-        <button id="add-button">Add Item</button>
-
+    <div class="mt-8">
+        <label for="replace-text-from" class="block mb-2">New Item (regex is allowed):</label>
+        <form>
+            <div class="flex items-center gap-2 mb-4">
+                <input type="text" id="replace-text-from" class="flex-1 p-2 border rounded" />
+                <span>with</span>
+                <input type="text" id="replace-text-to" class="flex-1 p-2 border rounded" />
+            </div>
+            <button id="add-button" class="px-4 py-2 bg-blue-500 text-white rounded">Add Item</button>
+        </form>
     </div>
-    <ul id="replacement-list"></ul>
+    <h3 class="text-xl font-bold mt-10">Rules</h3>
+    <p>The top rule is the most important. When matching on single rule, the first rule from the top that matches gets
+        executed, and on chained rules are processed from bottom to top.</p>
+    <div id="replacement-list-wrapper" class="space-y-4">
+        <table id="replacement-list" class="mt-4 text-left table-auto divide-y divide-gray-200"></table>
+    </div>
+
+
     <script src="./scripts/options.js"></script>
 </body>
 

@@ -58,27 +58,38 @@ function contentCopy(text) {
 
             console.log('Copied to clipboard: ', text);
         })
-        .catch((e) => {
-            console.log(e);
-            // Add a notification to the body, that disappears after 5 seconds
-            const notification = document.createElement('div');
-            notification.textContent = `Copied ${text} to clipboard`;
+        .catch((error) => {
+            // alert(error);
+            console.log(error);
+            if (error.message === 'Document is not focused.') {
+                // Notify the user
+                alert(
+                    'Error: The document is not focused. Please click on the document and try again.'
+                );
+            } else {
+                // Add a notification to the body, that disappears after 5 seconds
+                const notification = document.createElement('div');
+                notification.textContent = `Copied ${text} to clipboard`;
 
-            const customStyles = {
-                color: '#721c24',
-                backgroundCcolor: '#f8d7da',
-                borderColor: '#f5c6cb',
-            };
+                const customStyles = {
+                    color: '#721c24',
+                    backgroundCcolor: '#f8d7da',
+                    borderColor: '#f5c6cb',
+                };
 
-            Object.assign(notification.style, { ...defaultNotificationStyles, ...customStyles });
+                Object.assign(notification.style, {
+                    ...defaultNotificationStyles,
+                    ...customStyles,
+                });
 
-            setTimeout(() => {
-                notification.style.opacity = '0';
-                // Schedule the removal after the transition completes (0.5 seconds)
                 setTimeout(() => {
-                    notification.remove();
-                }, 500);
-            }, 5000);
+                    notification.style.opacity = '0';
+                    // Schedule the removal after the transition completes (0.5 seconds)
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 500);
+                }, 5000);
+            }
         });
 }
 
@@ -143,7 +154,7 @@ async function genericOnClick(info) {
                     textToReplace = replaceText({
                         replacementItems,
                         textToReplace,
-                        chained: false,
+                        chained: true,
                     });
                     chrome.scripting.executeScript({
                         target: { tabId: tab.id },
@@ -194,23 +205,30 @@ function isValidRegex(regexString) {
 }
 
 function replaceText({ replacementItems, textToReplace, chained } = {}) {
-    for (let i = 0; i < replacementItems.length; i++) {
-        const item = replacementItems[i];
+    let localReplacementItems = replacementItems;
+    if (chained) {
+        localReplacementItems = [...replacementItems].reverse();
+    }
+    // copy textToReplace to a new variable
+    let replacedText = textToReplace;
+
+    for (let i = 0; i < localReplacementItems.length; i++) {
+        const item = localReplacementItems[i];
         if (isValidRegex(item.newItemTextFrom)) {
             const lastSlashIndex = item.newItemTextFrom.lastIndexOf('/');
             const regexPattern = item.newItemTextFrom.slice(1, lastSlashIndex);
             const regexOptions = item.newItemTextFrom.slice(lastSlashIndex + 1);
             const regex = new RegExp(regexPattern, regexOptions);
-            textToReplace = textToReplace.replace(regex, item.newItemTextTo);
+            replacedText = replacedText.replace(regex, item.newItemTextTo);
         } else {
-            textToReplace = textToReplace.replaceAll(item.newItemTextFrom, item.newItemTextTo);
+            replacedText = replacedText.replaceAll(item.newItemTextFrom, item.newItemTextTo);
         }
 
-        if (!chained) {
-            return textToReplace;
+        if (!chained && textToReplace !== replacedText) {
+            return replacedText;
         }
     }
-    return textToReplace;
+    return replacedText;
 }
 
 async function generatedOnClick(info) {
@@ -242,6 +260,18 @@ async function addContextMenusFromReplacementItems() {
 
 function addGenericContextMenus() {
     chrome.contextMenus.create({
+        title: 'replace selection with first matched rule and open in new tab',
+        contexts: ['link'],
+        id: 'copyAndReplaceSelectionAndOpenInNewTab',
+    });
+
+    chrome.contextMenus.create({
+        title: 'replace selection with chained rules and open in new tab',
+        contexts: ['link'],
+        id: 'copyAndReplaceSelectionAndOpenInNewTabChained',
+    });
+
+    chrome.contextMenus.create({
         title: 'Copy and replace selection with the first matched rule',
         contexts: ['selection', 'link'],
         id: 'copyAndReplaceSelection',
@@ -251,18 +281,6 @@ function addGenericContextMenus() {
         title: 'Copy and replace selection with the chained rules',
         contexts: ['selection', 'link'],
         id: 'copyAndReplaceSelectionChained',
-    });
-
-    chrome.contextMenus.create({
-        title: 'replace selection with first matched rule and open in new tab',
-        contexts: ['link'],
-        id: 'copyAndReplaceSelectionAndOpenInNewTab',
-    });
-
-    chrome.contextMenus.create({
-        title: 'replace selection with first matched rule and open in new tab',
-        contexts: ['link'],
-        id: 'copyAndReplaceSelectionAndOpenInNewTabChained',
     });
 }
 
