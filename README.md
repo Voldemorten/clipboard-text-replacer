@@ -21,3 +21,5 @@ The chained rules are processed from bottom to top, so if you have two rules lik
 <img src="screenshots/chained_rules_example_result.png" alt="Chained Rules Example Result" width="500"/>
 
 Enjoy!
+
+PS. This is open source and the repo can be found on <a href="https://github.com/Voldemorten/chrome-url-replacer">github</a>
