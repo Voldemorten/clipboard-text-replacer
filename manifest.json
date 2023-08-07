@@ -1,6 +1,6 @@
 {
     "name": "Clipboard Text Replacer",
-    "description": "Clipboard Text Replacer is a Chrome extension that lets users set rules for replacing selections and links. It offers flexible rule setting on an options page and provides options to replace text and open in a new tab or copy to clipboard",
+    "description": "Clipboard Text Replacer is a Chrome extension that lets users set rules for replacing selections and links",
     "version": "0.0.0.1",
     "manifest_version": 3,
     "action": {
