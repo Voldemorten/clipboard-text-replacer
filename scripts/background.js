@@ -284,9 +284,12 @@ function addGenericContextMenus() {
     });
 }
 
-chrome.runtime.onInstalled.addListener(async function () {
+chrome.runtime.onInstalled.addListener(async function (details) {
     addGenericContextMenus();
     await addContextMenusFromReplacementItems();
+    if (details.reason == 'install') {
+        chrome.runtime.openOptionsPage();
+    }
 });
 
 chrome.storage.onChanged.addListener(function (changes, namespace) {

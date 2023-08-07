@@ -47,6 +47,24 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function moveItem(index, direction) {
+        chrome.storage.sync.get(['replacementItems'], function (result) {
+            const replacementItems = result.replacementItems || [];
+            if (direction === 'up' && index > 0) {
+                const temp = replacementItems[index - 1];
+                replacementItems[index - 1] = replacementItems[index];
+                replacementItems[index] = temp;
+            } else if (direction === 'down' && index < replacementItems.length - 1) {
+                const temp = replacementItems[index + 1];
+                replacementItems[index + 1] = replacementItems[index];
+                replacementItems[index] = temp;
+            }
+            chrome.storage.sync.set({ replacementItems: replacementItems }, function () {
+                renderReplacementItems(replacementItems);
+            });
+        });
+    }
+
     // Render the replacement list on the options page
     function renderReplacementItems(replacementItems) {
         replacementList.innerHTML = ''; // Clear the list first
@@ -56,16 +74,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const replacementFrom = document.createElement('td');
             replacementFrom.textContent = item.newItemTextFrom;
-            replacementFrom.className = 'font-bold text-blue-500 p-2'; // Style the replacement from text
+            replacementFrom.className = 'font-bold text-blue-500 p-2 px-10'; // Style the replacement from text
+            tableRow.appendChild(replacementFrom);
 
             const arrowIcon = document.createElement('td');
-            arrowIcon.className = 'px-10'; // Add padding to the arrow icon
+            arrowIcon.className = 'pr-10'; // Add padding to the arrow icon
             arrowIcon.innerHTML =
                 '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-5 w-5 mx-2"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>'; // SVG arrow icon
+            tableRow.appendChild(arrowIcon);
 
             const replacementTo = document.createElement('td');
             replacementTo.textContent = item.newItemTextTo;
             replacementTo.className = 'font-bold text-green-500 py-2 pr-10'; // Style the replacement to text
+            tableRow.appendChild(replacementTo);
 
             const removeButtonContainer = document.createElement('td');
             removeButtonContainer.className = 'p-2'; // Add padding to the remove button
@@ -76,11 +97,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 removeItem(index);
             });
             removeButtonContainer.appendChild(removeButton);
-
-            tableRow.appendChild(replacementFrom);
-            tableRow.appendChild(arrowIcon);
-            tableRow.appendChild(replacementTo);
             tableRow.appendChild(removeButtonContainer);
+
+            const upDownButtonContainer = document.createElement('td');
+            upDownButtonContainer.className = 'p-2 flex flex-col justify-center'; // Add padding and flexbox to the up/down buttons
+
+            const upButton = document.createElement('button');
+            const upIcon = document.createElement('i');
+            upIcon.className = 'fas fa-arrow-up';
+            upButton.appendChild(upIcon);
+            upButton.addEventListener('click', function () {
+                moveItem(index, 'up');
+            });
+            upDownButtonContainer.appendChild(upButton);
+
+            const downButton = document.createElement('button');
+            const downIcon = document.createElement('i');
+            downIcon.className = 'fas fa-arrow-down';
+            downButton.appendChild(downIcon);
+            downButton.addEventListener('click', function () {
+                moveItem(index, 'down');
+            });
+            upDownButtonContainer.appendChild(downButton);
+
+            tableRow.appendChild(upDownButtonContainer);
 
             replacementList.appendChild(tableRow);
         });
