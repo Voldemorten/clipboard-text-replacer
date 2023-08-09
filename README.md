@@ -4,19 +4,19 @@ This is an open-source project that I created to facilitate a quick and efficien
 
 The options page is where you set the rules:
 
-<img src="screenshots/options_page.png" alt="Options Page" width="500"/>
+<img src="screenshots/pretty/options_page_pretty.png" alt="Options Page" width="500"/>
 
 In the context menu, you will find two options to replace the text and then open it in a new tab. This can either be the first rule that matches or the chained rules. You also have the same two options for copying the text to the clipboard. Each rule also provides the option to apply a specific rule and copy the replaced text to the clipboard:
 
-<img src="screenshots/context_menu.png" alt="Context Menu" width="500"/>
+<img src="screenshots/pretty/context_menu_pretty.png" alt="Context Menu" width="500"/>
 
 The chained rules are processed from bottom to top. For instance, if you have two rules like this:
 
-<img src="screenshots/chained_rules_example.png" alt="Chained Rules Example" width="500"/>
+<img src="screenshots/pretty/chained_rules_example_pretty.png" alt="Chained Rules Example" width="500"/>
 
 1 will be transformed into ---------
 
-<img src="screenshots/chained_rules_example_result.png" alt="Chained Rules Example Result" width="500"/>
+<img src="screenshots/pretty/chained_rules_example_result_pretty.png" alt="Chained Rules Example Result" width="500"/>
 
 ## Installation
 
