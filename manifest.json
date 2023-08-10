@@ -1,7 +1,7 @@
 {
     "name": "Clipboard Text Replacer",
     "description": "Clipboard Text Replacer is a Chrome extension that lets users set rules for replacing selections and links",
-    "version": "0.0.0.1",
+    "version": "0.0.0.2",
     "manifest_version": 3,
     "action": {
         "default_popup": "hello.html",
@@ -12,7 +12,7 @@
         "32": "./icons/icon_32.png",
         "128": "./icons/icon_128.png"
     },
-    "permissions": ["contextMenus", "clipboardWrite", "activeTab", "scripting", "tabs", "storage"],
+    "permissions": ["contextMenus", "clipboardWrite", "activeTab", "scripting", "storage"],
     "background": {
         "service_worker": "scripts/background.js"
     },
