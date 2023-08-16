@@ -20,7 +20,7 @@ The chained rules are processed from bottom to top. For instance, if you have tw
 
 ## Installation
 
-As the extension is currently pending review on the Chrome Webstore, you can install it manually as an unpackaged extension. Follow the steps below to install:
+You can find the extension [here](https://chrome.google.com/webstore/detail/clipboard-text-replacer/hnaikeeiankndnciadgkjokbopnehbfl), but if you wish to, you can install it manually as an unpackaged extension. Follow the steps below to install:
 
 1. Clone the repository: Open your terminal and run the following command:
     ```
